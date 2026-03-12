@@ -10,6 +10,12 @@ def procesar_lote_videos_split(ruta_carpeta, carpeta_base_destino, limite_videos
 
     print(f"Buscando videos en: {os.path.abspath(ruta_real_origen)}")
 
+    # VALIDACIÓN DE CANTIDAD PERMITIDA
+    if limite_videos > len(todos):
+        print(f"\nERROR: Cantidad de videos no disponible.")
+        print(f"Solicitaste {limite_videos} videos, pero la carpeta solo contiene {len(todos)}.")
+        return  # Sale de la función y no ejecuta nada más
+
     lote = todos[:limite_videos] # del video 0 hasta el limite colocado
     corte_train = math.ceil(len(lote) * 0.8) #Split
 
@@ -34,7 +40,7 @@ def procesar_lote_videos_split(ruta_carpeta, carpeta_base_destino, limite_videos
             if not ret: break
 
             # Salto de seguridad (f_idx > 15) para evitar el inicio negro
-            if f_idx % cada_n_frames == 0 and f_idx > 15: #cada_n_frames: Guarda u fotograma cada 30 segundos, f_idx > 15: ignora primeros 15 segundos
+            if f_idx % cada_n_frames == 0 and f_idx > 15: #cada_n_frames: Guarda un frame cada 1 segundo, f_idx > 15: ignora primeros 15 segundos
                 # Nombre del archivo:
                 ruta_final = os.path.join(destino, f"{nombre}_f{f_idx}.jpg")
                 cv2.imwrite(ruta_final, frame) #oma la matriz de píxeles y la convierte en un archivo real.
