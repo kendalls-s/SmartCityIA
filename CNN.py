@@ -2,53 +2,86 @@ import cv2
 import os
 import glob
 import math
+import numpy as np
 
 
-def procesar_lote_videos_split(ruta_carpeta, carpeta_base_destino, limite_videos=10, cada_n_frames=30):
+def procesar_lote_videos_split(ruta_carpeta, carpeta_base_destino, limite_videos=10, cada_n_frames=30, umbral=2.5,
+                               max_fotos_video=40):
     ruta_real_origen = os.path.join("..", ruta_carpeta)
-    todos = glob.glob(os.path.join(ruta_real_origen, "*.mp4")) # glob() busca archivos terminados en .mp4(videos)
+    todos = glob.glob(os.path.join(ruta_real_origen, "*.mp4")) #Lista de todos los archivos terminados en .mp4
 
-    print(f"Buscando videos en: {os.path.abspath(ruta_real_origen)}")
+    # Limite de videos procesados
+    if limite_videos > len(todos): #Limite de videos procesados
+        print(f"ERROR: Solo hay {len(todos)} videos disponibles.")
+        return
 
-    # VALIDACIÓN DE CANTIDAD PERMITIDA
-    if limite_videos > len(todos):
-        print(f"\nERROR: Cantidad de videos no disponible.")
-        print(f"Solicitaste {limite_videos} videos, pero la carpeta solo contiene {len(todos)}.")
-        return  # Sale de la función y no ejecuta nada más
+    lote = todos[:limite_videos]
+    corte_train = math.ceil(len(lote) * 0.8) # Train y test division
 
-    lote = todos[:limite_videos] # del video 0 hasta el limite colocado
-    corte_train = math.ceil(len(lote) * 0.8) #Split
-
-    for i, ruta in enumerate(lote): #Enumera y la direccion del video
-        sub = "train" if i < corte_train else "test" #Si la cantidad es menor al 80% va train si lo pasa a test
-
-        #Ruta de destino
+    for i, ruta in enumerate(lote): # Envio a carpeta test y train
+        sub = "train" if i < corte_train else "test"
         destino = os.path.join("..", "data", "processed", sub, carpeta_base_destino)
 
-        # Validación de carpeta
         if not os.path.exists(destino):
-            print(f"ERROR: La carpeta de destino no existe: {os.path.abspath(destino)}")
-            print("Por favor, créala manualmente antes de continuar.")
-            return
+            os.makedirs(destino, exist_ok=True)  # Verificación y crea la carpeta si no existe
 
-        cap = cv2.VideoCapture(ruta) #Abre el archivo
-        nombre = os.path.basename(ruta).split('.')[0] #Nombra el fotograma
-        f_idx, guardados = 0, 0  #Contador
+        cap = cv2.VideoCapture(ruta)
+        nombre = os.path.basename(ruta).split('.')[0]
+        f_idx, guardados = 0, 0
 
-        while True:
+        # Detección de movimiento
+        ret, prev_frame = cap.read()
+        if not ret: continue
+        prev_gray = cv2.cvtColor(prev_frame, cv2.COLOR_BGR2GRAY)
+
+        while True: #Empieza a leer el video cuadro por cuadro hasta que se acabe.
             ret, frame = cap.read()
             if not ret: break
 
-            # Salto de seguridad (f_idx > 15) para evitar el inicio negro
-            if f_idx % cada_n_frames == 0 and f_idx > 15: #cada_n_frames: Guarda un frame cada 1 segundo, f_idx > 15: ignora primeros 15 segundos
-                # Nombre del archivo:
-                ruta_final = os.path.join(destino, f"{nombre}_f{f_idx}.jpg")
-                cv2.imwrite(ruta_final, frame) #oma la matriz de píxeles y la convierte en un archivo real.
-                guardados += 1
+            # Evalua cada N frames y si no ha llegado al límite por video
+            if f_idx % cada_n_frames == 0 and f_idx > 15 and guardados < max_fotos_video:
+                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+                # Cálculo de movimiento
+                flow = cv2.calcOpticalFlowFarneback(prev_gray, gray, None, 0.5, 3, 15, 3, 5, 1.2, 0)
+                mag, _ = cv2.cartToPolar(flow[..., 0], flow[..., 1])
+                intensidad = mag.mean()
+
+                if intensidad > umbral:
+                    ruta_final = os.path.join(destino, f"{nombre}_f{f_idx}.jpg")
+                    cv2.imwrite(ruta_final, frame)
+                    guardados += 1
+
+                prev_gray = gray
+
             f_idx += 1
 
-        cap.release() #Avisa si está siendo usado por otro programa
-        print(f" -> {sub.upper()}: {nombre} ({guardados} fotos)") #proceso visual en la consola
+        cap.release()
+        print(f" -> {sub.upper()}: {nombre} ({guardados} fotos)")
+
+
+def vaciar_contenido():
+    # Ruta base donde están train y test
+    ruta_base = "../data/processed"
+    categorias = ["Normal", "Asaltos", "Pelea", "Vandalismo"]
+
+    for sub in ["train", "test"]:
+        for cat in categorias:
+            # Construccion de la ruta:
+            ruta_carpeta = os.path.join(ruta_base, sub, cat)
+
+            # Solo actuamos si la carpeta ya existe
+            if os.path.exists(ruta_carpeta):
+                archivos = os.listdir(ruta_carpeta)
+                for archivo in archivos:
+                    ruta_archivo = os.path.join(ruta_carpeta, archivo)
+                    # Solo borramos si es un archivo (ignora carpetas internas si las hubiera)
+                    if os.path.isfile(ruta_archivo):
+                        os.remove(ruta_archivo)
+                print(f"Contenido eliminado de: {sub}/{cat}")
+            else:
+                print(f"Saltando: {sub}/{cat} (La carpeta no existe)")
+
 
 
 
