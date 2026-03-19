@@ -59,7 +59,7 @@ def procesar_lote_videos_split(ruta_carpeta, carpeta_base_destino, limite_videos
         cap.release()
         print(f" -> {sub.upper()}: {nombre} ({guardados} fotos)")
 
-
+#Funcion que borra las imagenes de las carpetas processed ("Normal", "Asaltos", "Pelea", "Vandalismo")
 def vaciar_contenido():
     # Ruta base donde están train y test
     ruta_base = "../data/processed"
@@ -70,12 +70,12 @@ def vaciar_contenido():
             # Construccion de la ruta:
             ruta_carpeta = os.path.join(ruta_base, sub, cat)
 
-            # Solo actuamos si la carpeta ya existe
+            # Solo actua si la carpeta ya existe
             if os.path.exists(ruta_carpeta):
                 archivos = os.listdir(ruta_carpeta)
                 for archivo in archivos:
                     ruta_archivo = os.path.join(ruta_carpeta, archivo)
-                    # Solo borramos si es un archivo (ignora carpetas internas si las hubiera)
+
                     if os.path.isfile(ruta_archivo):
                         os.remove(ruta_archivo)
                 print(f"Contenido eliminado de: {sub}/{cat}")
