@@ -1,10 +1,10 @@
-import cv2
+import cv2 #Libreria OpenCV
 import os
 import glob
 import math
 import numpy as np
 
-
+# Funcion que tiene como propósito ir a la carpeta de los videos y sacar los fps conforme a un umbral establecido con el proposito de trae la informacion necesaria para cada categoria
 def procesar_lote_videos_split(ruta_carpeta, carpeta_base_destino, limite_videos=10, cada_n_frames=30, umbral=2.5,
                                max_fotos_video=40):
     ruta_real_origen = os.path.join("..", ruta_carpeta)
@@ -16,7 +16,7 @@ def procesar_lote_videos_split(ruta_carpeta, carpeta_base_destino, limite_videos
         return
 
     lote = todos[:limite_videos]
-    corte_train = math.ceil(len(lote) * 0.8) # Train y test division
+    corte_train = math.ceil(len(lote) * 0.8) # Train y test division / nota: math.ceil() funcion que redondea
 
     for i, ruta in enumerate(lote): # Envio a carpeta test y train
         sub = "train" if i < corte_train else "test"
@@ -25,20 +25,20 @@ def procesar_lote_videos_split(ruta_carpeta, carpeta_base_destino, limite_videos
         if not os.path.exists(destino):
             os.makedirs(destino, exist_ok=True)  # Verificación y crea la carpeta si no existe
 
-        cap = cv2.VideoCapture(ruta)
-        nombre = os.path.basename(ruta).split('.')[0]
-        f_idx, guardados = 0, 0
+        cap = cv2.VideoCapture(ruta) # cv2.VideoCapture() abre el video
+        nombre = os.path.basename(ruta).split('.')[0] # Trae el nombre del video
+        f_idx, guardados = 0, 0 # Contador
 
         # Detección de movimiento
         ret, prev_frame = cap.read()
         if not ret: continue
-        prev_gray = cv2.cvtColor(prev_frame, cv2.COLOR_BGR2GRAY)
+        prev_gray = cv2.cvtColor(prev_frame, cv2.COLOR_BGR2GRAY) #Escala de grises para que detecte el movimiento
 
         while True: #Empieza a leer el video cuadro por cuadro hasta que se acabe.
             ret, frame = cap.read()
             if not ret: break
 
-            # Evalua cada N frames y si no ha llegado al límite por video
+            # Evalua cada N frames y si no ha llegado al límite por video (el max_fotos_video)
             if f_idx % cada_n_frames == 0 and f_idx > 15 and guardados < max_fotos_video:
                 gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
