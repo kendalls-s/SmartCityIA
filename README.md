@@ -17,7 +17,7 @@ SmartCityIA/
 │   ├── 02_CNN_CCTV.ipynb         ← Entrenamiento del modelo CNN
 │   └── 03_RNN_Incidencias.ipynb  ← Entrenamiento del modelo RNN/LSTM
 ├── data/
-│   ├── raw/                      ← Videos originales del dataset UCF-Crime
+│   ├── raw/                      ← Videos originales del dataset UCF-Crime 
 │   └── processed/
 │       ├── train/
 │       │   ├── Normal/
@@ -43,9 +43,11 @@ SmartCityIA/
 ### Dataset
 
 **UCF-Crime Dataset** — Videos de vigilancia con escenas normales y criminales.
+**Estadisticas OIJ** - Cantidad de crimenes con fecha desde el 01/02/2022 al 01/02/2026
 
 -   Kaggle: [mission-ai/crimeucfdataset](https://www.kaggle.com/datasets/mission-ai/crimeucfdataset)
 -   UCF: [Real-World Anomaly Detection](https://crcv.ucf.edu/research/real-world-anomaly-detection-in-surveillance-videos/)
+-   Dataset OIJ: (pjenlinea3.poder-judicial.go.cr/estadisticasoij) 
 
 ### Mapeo de carpetas del dataset a clases del proyecto
 
@@ -79,12 +81,14 @@ procesar_lote_videos_split(
 
 La función `procesar_lote_videos_split` divide automáticamente los videos en **80% train / 20% test** y usa flujo óptico para filtrar frames con movimiento relevante.
 
+
+
 ------------------------------------------------------------------------
 
 ## 🏫 Información Académica
 
 **Institución:** Colegio Universitario de Cartago (CUC)\
-**Curso:** Inteligencia Artificial\
+**Curso:** Inteligencia Artificial Aplicada \
 **Proyecto:** Proyecto 2 — Smart City IA\
 **Integrantes:** - Camila Jiménez, - Roberto Coto, - Kendall Solano, - Wedell Orozco
 
