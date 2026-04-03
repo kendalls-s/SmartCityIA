@@ -345,8 +345,8 @@ def predecir_n_dias(serie_historica, n_dias):
     return predicciones
 
 def nivel_riesgo(valor):
-    if valor > 160: return "Alto",  "#ef4444", "badge-red"
-    if valor >= 120: return "Medio", "#fbbf24", "badge-amber"
+    if valor > 40: return "Alto",  "#ef4444", "badge-red"
+    if valor >= 25: return "Medio", "#fbbf24", "badge-amber"
     return "Bajo", "#22c55e", "badge-green"
 
 # ══════════════════════════════════════════════════════════════════════════════
